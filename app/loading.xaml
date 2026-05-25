@@ -1,0 +1,11 @@
+<Page  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Frame>
+        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" >
+           <ProgressRing IsActive="True"/>
+		   <TextBlock Margin="5,0,0,0" FontSize="18" Text="" Name="Loading.Status"/>
+          
+        </StackPanel>
+
+        
+    </Frame>
+</Page>

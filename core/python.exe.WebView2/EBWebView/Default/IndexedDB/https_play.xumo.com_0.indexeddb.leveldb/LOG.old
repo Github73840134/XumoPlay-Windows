@@ -1,0 +1,14 @@
+2026/05/25-16:43:45.362 bbec Reusing MANIFEST C:\Users\light\Programming\Github\XumoPlay-Windows\core\python.exe.WebView2\EBWebView\Default\IndexedDB\https_play.xumo.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/05/25-16:43:45.363 bbec Recovering log #9
+2026/05/25-16:43:45.363 bbec Reusing old log C:\Users\light\Programming\Github\XumoPlay-Windows\core\python.exe.WebView2\EBWebView\Default\IndexedDB\https_play.xumo.com_0.indexeddb.leveldb/000009.log 
+2026/05/25-16:43:45.364 bbec Delete type=2 #7
+2026/05/25-16:43:45.380 79fc Level-0 table #14: started
+2026/05/25-16:43:45.385 79fc Level-0 table #14: 1163 bytes OK
+2026/05/25-16:43:45.391 79fc Delete type=0 #9
+2026/05/25-16:43:45.392 bbec Manual compaction at level-0 from '\x00\x07\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x08\x00\x00\x00' @ 0 : 0; will stop at '\x00\x07\x00\x00\x05' @ 580 : 1
+2026/05/25-16:43:45.393 bbec Compacting 1@0 + 1@1 files
+2026/05/25-16:43:45.398 bbec Generated table #15@0: 208 keys, 12300 bytes
+2026/05/25-16:43:45.398 bbec Compacted 1@0 + 1@1 files => 12300 bytes
+2026/05/25-16:43:45.403 bbec compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/25-16:43:45.404 bbec Delete type=2 #14
+2026/05/25-16:43:45.405 bbec Manual compaction at level-0 from '\x00\x07\x00\x00\x05' @ 580 : 1 .. '\x00\x08\x00\x00\x00' @ 0 : 0; will stop at (end)
