@@ -112,6 +112,8 @@ def checkForUpdate():
 			return 
 	except requests.exceptions.Timeout:
 		cfuStatus = 4
+	except Exception as e:
+		cfuStatus = 6
 	try:
 		cfuStatus = 2
 		resp = request.urlopen("https://raw.githubusercontent.com/Github73840134/XumoPlay-Windows/refs/heads/main/update.zip")
@@ -257,6 +259,7 @@ class SplashApp(XamlApplication):
 		print(self.status)
 	def updateUI(self):
 		if self.page == "cfu":
+			print(cfuStatus)
 			if cfuStatus == 0:
 				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Checking for update"
 			elif cfuStatus == 2:
@@ -267,6 +270,9 @@ class SplashApp(XamlApplication):
 			elif cfuStatus == 5:
 				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
 				self.page = "loading"
+			elif cfuStatus == 6:
+				self.page = "error"
+				self.document.Content = XamlReader().Load(open("error.xaml", "r", encoding='utf-8').read())
 			return
 		if self.page == "loading" and self.status == 1:
 			self.page = "main"
@@ -287,11 +293,6 @@ class SplashApp(XamlApplication):
 			self.page = "loading"
 			self.document.Content = XamlReader().Load(open("loading.xaml", "r", encoding='utf-8').read())
 		if self.page != "error" and self.status == 2:
-			if self.webview:
-				try:
-					self.webview.CoreWebView2.Navigate("about:blank")
-				except:
-					pass
 			self.page = "error"
 			self.document.Content = XamlReader().Load(open("error.xaml", "r", encoding='utf-8').read())
 	def onClosed(self,sender,args):
