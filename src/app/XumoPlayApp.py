@@ -134,9 +134,9 @@ def checkForUpdate():
 		cfuStatus = 3
 		import psutil,subprocess
 		
-		#subprocess.Popen(exe,start_new_session=True)
-		#x = psutil.Process(os.getpid())
-		#x.kill()
+		subprocess.Popen(exe,start_new_session=True)
+		x = psutil.Process(os.getpid())
+		x.kill()
 	except:
 		cfuStatus = 4
 
