@@ -127,8 +127,11 @@ def checkForUpdate():
 		length = int(resp.headers.get("Content-Length"))
 		while True:
 			x = resp.read(io.DEFAULT_BUFFER_SIZE)
+			
 			file.write(x)
 			cfuProgress = round((file.tell()/length)*100)
+			if len(x) == 0:
+				break
 			
 		file.close()
 		cfuStatus = 3
