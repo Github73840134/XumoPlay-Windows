@@ -252,11 +252,11 @@ class SplashApp(XamlApplication):
 		)
 
 	def on_fullscreen_changed(self, sender, args):
-
-		if sender.ContainsFullScreenElement:
-			self.enter_fullscreen()
-		else:
-			self.exit_fullscreen()
+		if self.steam == False:
+			if sender.ContainsFullScreenElement:
+				self.enter_fullscreen()
+			else:
+				self.exit_fullscreen()
 
 	def enter_fullscreen(self):
 		self.splash_window.AppWindow.SetPresenter(
