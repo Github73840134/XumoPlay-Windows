@@ -100,9 +100,10 @@ from win32more.Microsoft.UI.Windowing import (
 	OverlappedPresenter
 )
 cfuStatus = -1
+cfuProgress = 0
 def checkForUpdate():
-	import urllib.request as request
-	global cfuStatus
+	import urllib.request as request,io
+	global cfuStatus,cfuProgress
 	cfuStatus = 0
 	try:
 		resp = requests.get("https://raw.githubusercontent.com/Github73840134/XumoPlay-Windows/refs/heads/main/version",timeout=5)
@@ -114,17 +115,28 @@ def checkForUpdate():
 		cfuStatus = 4
 	except Exception as e:
 		cfuStatus = 6
+	exe = "../core/pythonw.exe update.py"
+	if "bigscreen" in sys.argv:
+		exe += " -launchBigScreen"
+	if "wait" in sys.argv:
+		exe += " -launchWait"
 	try:
 		cfuStatus = 2
 		resp = request.urlopen("https://raw.githubusercontent.com/Github73840134/XumoPlay-Windows/refs/heads/main/update.zip")
 		file = open("../update.zip","wb+")
-		file.write(resp.read())
+		length = int(resp.headers.get("Content-Length"))
+		while True:
+			x = resp.read(io.DEFAULT_BUFFER_SIZE)
+			file.write(x)
+			cfuProgress = round((file.tell()/length)*100)
+			
 		file.close()
 		cfuStatus = 3
 		import psutil,subprocess
-		subprocess.Popen("../core/pythonw.exe update.py",start_new_session=True)
-		x = psutil.Process(os.getpid())
-		x.kill()
+		
+		#subprocess.Popen(exe,start_new_session=True)
+		#x = psutil.Process(os.getpid())
+		#x.kill()
 	except:
 		cfuStatus = 4
 
@@ -158,7 +170,7 @@ class SplashApp(XamlApplication):
 		self.timer.Tick += lambda s, e: self.checkOnlineStatus()
 		self.timer.Start()
 		self.timer2 = DispatcherTimer()
-		self.timer2.Interval = TimeSpan(10_000_000) # 100ms
+		self.timer2.Interval = TimeSpan(1_000_000) # 100ms
 		self.timer2.Tick += lambda s, e: self.updateUI()
 		self.timer2.Start()
 		self.splash_window.Title = "Xumo Play"
@@ -177,16 +189,29 @@ class SplashApp(XamlApplication):
 		# Set the window icon
 		SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon)
 		SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon)
-		if len(sys.argv) == 2:
-			if sys.argv[1] == "nocfu":
+		skipcfu = False
+		self.steam = False
+		if len(sys.argv) > 1:
+			if "nocfu" in sys.argv:
 				self.page = "loading"
-				return
-		import _thread
-		_thread.start_new_thread(checkForUpdate,())
+				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
+				skipcfu = True
+			if "bigscreen" in sys.argv:
+				self.apply_display_mode()
+				self.steam = True
+			
+		if not skipcfu:
+			import _thread
+			_thread.start_new_thread(checkForUpdate,())
+	def apply_display_mode(self):
+		self.splash_window.AppWindow.SetPresenter(
+			FullScreenPresenter.Create()
+		)
+		
 	def on_document_loaded(self,*args):
 		if self.page == "main":
-			print("Load")
-			self.setup_webview_hook()
+			if self.steam == False:
+				self.setup_webview_hook()
 	def setup_webview_hook(self):
 
 		root = self.document.Content.as_(FrameworkElement)
@@ -259,16 +284,21 @@ class SplashApp(XamlApplication):
 		print(self.status)
 	def updateUI(self):
 		if self.page == "cfu":
-			print(cfuStatus)
+			#print(cfuStatus)
 			if cfuStatus == 0:
 				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Checking for update"
+
 			elif cfuStatus == 2:
-				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Downloading update"
+				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = f"Downloading update ({cfuProgress}%)"
+
+
 			elif cfuStatus == 4:
 				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
+
 				self.page = "loading"
 			elif cfuStatus == 5:
 				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
+
 				self.page = "loading"
 			elif cfuStatus == 6:
 				self.page = "error"
@@ -292,6 +322,11 @@ class SplashApp(XamlApplication):
 		if self.page == "main" and self.status == 0:
 			self.page = "loading"
 			self.document.Content = XamlReader().Load(open("loading.xaml", "r", encoding='utf-8').read())
+			self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
+
+		if self.page == "loading" and self.status == 0:
+			self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
+
 		if self.page != "error" and self.status == 2:
 			self.page = "error"
 			self.document.Content = XamlReader().Load(open("error.xaml", "r", encoding='utf-8').read())
