@@ -80,6 +80,8 @@ from win32more.Windows.Win32.System.Registry import *
 from win32more.Microsoft.UI.Xaml.Controls import WebView2
 import threading,json,requests
 from time import sleep
+from win32more.Windows.Win32.Media.Audio import PlaySoundW, SND_FILENAME, SND_ASYNC, SND_PURGE
+from win32more.Windows.Win32.Foundation import PWSTR
 
 from win32more.Windows.Win32.UI.WindowsAndMessaging import (
 	GetWindowLongW, SetWindowLongW,
@@ -113,8 +115,11 @@ def checkForUpdate():
 			return 
 	except requests.exceptions.Timeout:
 		cfuStatus = 4
+		return
+
 	except Exception as e:
 		cfuStatus = 6
+		return
 	exe = "../core/pythonw.exe update.py"
 	if "bigscreen" in sys.argv:
 		exe += " -launchBigScreen"
@@ -194,6 +199,7 @@ class SplashApp(XamlApplication):
 		SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon)
 		skipcfu = False
 		self.steam = False
+		self.launched = False
 		if len(sys.argv) > 1:
 			if "nocfu" in sys.argv:
 				self.page = "loading"
@@ -202,6 +208,8 @@ class SplashApp(XamlApplication):
 			if "bigscreen" in sys.argv:
 				self.apply_display_mode()
 				self.steam = True
+				PlaySoundW(PWSTR(os.path.join(os.getcwd(),'launch.wav')), None, SND_FILENAME | SND_ASYNC)
+
 			
 		if not skipcfu:
 			import _thread
@@ -314,6 +322,8 @@ class SplashApp(XamlApplication):
 			self.splash_window.DispatcherQueue.TryEnqueue(
 				lambda: self.setup_webview_hook()
 			)
+			PlaySoundW(PWSTR(os.path.join(os.getcwd(),'startup.wav')), None, SND_FILENAME | SND_ASYNC)
+
 		if self.page == "error" and self.status == 1:
 			self.page = "main"
 			
@@ -322,6 +332,9 @@ class SplashApp(XamlApplication):
 			self.splash_window.DispatcherQueue.TryEnqueue(
 				lambda: self.setup_webview_hook()
 			)
+			PlaySoundW(PWSTR(os.path.join(os.getcwd(),'startup.wav')), None, SND_FILENAME | SND_ASYNC)
+
+
 		if self.page == "main" and self.status == 0:
 			self.page = "loading"
 			self.document.Content = XamlReader().Load(open("loading.xaml", "r", encoding='utf-8').read())
@@ -335,6 +348,9 @@ class SplashApp(XamlApplication):
 			self.document.Content = XamlReader().Load(open("error.xaml", "r", encoding='utf-8').read())
 	def onClosed(self,sender,args):
 		import psutil
+		if self.steam:
+			PlaySoundW(PWSTR(os.path.join(os.getcwd(),'shutdown.wav')), None, SND_FILENAME)
+
 		x = psutil.Process(os.getpid())
 		x.kill()
 
