@@ -9,7 +9,7 @@
 	<Grid>
    	 <Frame x:Name="ContentFrame" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
 		<StackPanel>
-			<InfoBar Background="Black" IsClosable="False" Name="exit" IsOpen="True" Severity="Informational" Title="Press Alt-F4 to exit" />
+			<InfoBar Background="Black" IsClosable="False" Name="exit" IsOpen="False" Severity="Informational" Title="Press Alt-F4 to exit" />
 		</StackPanel>
 	</Grid>
 </Window>
