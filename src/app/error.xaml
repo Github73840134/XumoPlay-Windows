@@ -4,7 +4,7 @@
 		   <TextBlock FontSize="24" Text="Check your internet connection" Name="Loading.Status"/>
 		   <TextBlock Text="We can't connect to Xumo Play" Name="Loading.Status2"/>
 		   <TextBlock Text="We are trying to reconnect in the mean time" Name="Loading.Status3"/>
-		   <TextBlock Text="Version 2.3"/>
+		   <TextBlock Text="Version 2.4"/>
 
 
 

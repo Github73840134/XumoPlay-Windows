@@ -64,7 +64,7 @@ from win32more.Microsoft.UI.Xaml.Media import MicaBackdrop,Imaging,FontFamily,Co
 from win32more.Microsoft.UI.Xaml.Markup import XamlReader
 from win32more.Windows.UI.Xaml.Interop import TypeKind
 from win32more.Windows.UI.Xaml import GridLength, GridLengthHelper, GridUnitType,DependencyObject,Thickness,Visibility
-from win32more.Microsoft.UI.Xaml.Controls import InfoBar,Primitives,ToggleSplitButton,Border,ToggleSwitch,Page,HyperlinkButton,Button,CheckBox,ComboBox,NumberBox, ProgressRing,Image,PasswordBox,TextBlock,TextBlock, Slider, StackPanel, NavigationView, Frame, NavigationViewItem, RowDefinition, Grid, GridView, GroupStyle, Canvas, ToolTip
+from win32more.Microsoft.UI.Xaml.Controls import InfoBar,Primitives,ToggleSplitButton,Border,ToggleSwitch,Page,HyperlinkButton,Button,CheckBox,ComboBox,NumberBox, ProgressRing,Image,PasswordBox,TextBlock,TextBlock, Slider, StackPanel, NavigationView, Frame, NavigationViewItem, RowDefinition, Grid, GridView, GroupStyle, Canvas, ToolTip,InfoBar
 from win32more.Windows.Foundation import PropertyValue,IPropertyValue,Uri
 from win32more.Windows.Win32.System.WinRT import IInspectable
 from win32more.Microsoft.UI.Windowing import AppWindow
@@ -82,7 +82,7 @@ import threading,json,requests
 from time import sleep
 from win32more.Windows.Win32.Media.Audio import PlaySoundW, SND_FILENAME, SND_ASYNC, SND_PURGE
 from win32more.Windows.Win32.Foundation import PWSTR
-
+import time
 from win32more.Windows.Win32.UI.WindowsAndMessaging import (
 	GetWindowLongW, SetWindowLongW,
 	GetWindowLongPtrW, SetWindowLongPtrW,
@@ -157,6 +157,7 @@ class SplashApp(XamlApplication):
 		self.splash_window = None
 		self.main_window = None
 		self.status = 0
+		self.hidepoint = -1
 	
 	def OnLaunched(self, args):
 		# Initialize XAML runtime
@@ -193,6 +194,7 @@ class SplashApp(XamlApplication):
 			0,
 			LR_LOADFROMFILE
 		)
+
 		
 		# Set the window icon
 		SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon)
@@ -206,14 +208,21 @@ class SplashApp(XamlApplication):
 				self.document.Content.as_(FrameworkElement).FindName("Loading.Status").as_(TextBlock).Text = "Connecting to Xumo Play"
 				skipcfu = True
 			if "bigscreen" in sys.argv:
+				
+
 				self.apply_display_mode()
 				self.steam = True
 				PlaySoundW(PWSTR(os.path.join(os.getcwd(),'launch.wav')), None, SND_FILENAME | SND_ASYNC)
+			else:
+				self.splash_window.Content.as_(FrameworkElement).FindName("exit").as_(InfoBar).IsOpen = False
+			
+
 
 			
 		if not skipcfu:
 			import _thread
 			_thread.start_new_thread(checkForUpdate,())
+
 	def apply_display_mode(self):
 		self.splash_window.AppWindow.SetPresenter(
 			FullScreenPresenter.Create()
@@ -322,6 +331,11 @@ class SplashApp(XamlApplication):
 			self.splash_window.DispatcherQueue.TryEnqueue(
 				lambda: self.setup_webview_hook()
 			)
+			if self.steam:
+				self.splash_window.Content.as_(FrameworkElement).FindName("exit").as_(InfoBar).IsOpen = True
+				self.hidepoint = time.time()+3
+			else:
+				self.splash_window.Content.as_(FrameworkElement).FindName("exit").as_(InfoBar).IsOpen = False
 			PlaySoundW(PWSTR(os.path.join(os.getcwd(),'startup.wav')), None, SND_FILENAME | SND_ASYNC)
 
 		if self.page == "error" and self.status == 1:
@@ -332,6 +346,12 @@ class SplashApp(XamlApplication):
 			self.splash_window.DispatcherQueue.TryEnqueue(
 				lambda: self.setup_webview_hook()
 			)
+			if self.steam:
+				self.splash_window.Content.as_(FrameworkElement).FindName("exit").as_(InfoBar).IsOpen = True
+				self.hidepoint = time.time()+3
+
+			else:
+				self.splash_window.Content.as_(FrameworkElement).FindName("exit").as_(InfoBar).IsOpen = False
 			PlaySoundW(PWSTR(os.path.join(os.getcwd(),'startup.wav')), None, SND_FILENAME | SND_ASYNC)
 
 
@@ -346,6 +366,12 @@ class SplashApp(XamlApplication):
 		if self.page != "error" and self.status == 2:
 			self.page = "error"
 			self.document.Content = XamlReader().Load(open("error.xaml", "r", encoding='utf-8').read())
+		if self.page == "main":
+			if self.hidepoint != -1:
+				if time.time() >= self.hidepoint:
+					self.splash_window.Content.as_(FrameworkElement).FindName("exit").as_(InfoBar).IsOpen = False
+					self.hidepoint = -1
+
 	def onClosed(self,sender,args):
 		import psutil
 		if self.steam:
@@ -354,23 +380,7 @@ class SplashApp(XamlApplication):
 		x = psutil.Process(os.getpid())
 		x.kill()
 
-	def _check_thread(self, thread):
-		
-
-		if not thread.is_alive() and not self.launched:
-			self.splash_window.Close()
-			self.launched = True
-		else:
-			if self.loadState == 0:
-				self.splash_window.Content.as_(FrameworkElement).FindName("Status").as_(TextBlock).Text = "Starting service"
-			elif self.loadState == 1:
-				self.splash_window.Content.as_(FrameworkElement).FindName("Status").as_(TextBlock).Text = "Starting app"
-			elif self.loadState == 2:
-				self.splash_window.Content.as_(FrameworkElement).FindName("Status").as_(TextBlock).Text = "Preparing updates"
-			elif self.loadState == 3:
-				self.splash_window.Content.as_(FrameworkElement).FindName("Status").as_(TextBlock).Text = "Installing updates"
-			elif self.loadState == 4:
-				self.splash_window.Content.as_(FrameworkElement).FindName("Status").as_(TextBlock).Text = "One Moment"
+	
 	def _set_window_properties(self, hwnd):
 		# You can use win32 APIs to set size, position, etc.
 		from win32more.Windows.Win32.UI.WindowsAndMessaging import (

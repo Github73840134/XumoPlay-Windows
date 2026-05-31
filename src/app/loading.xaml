@@ -11,7 +11,7 @@
 		        <TextBlock FontSize="18" Text="Checking for updates" Name="Loading.Status"/>
           
         </StackPanel>
-		<TextBlock FontSize="18" Text="Version: 2.3" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+		<TextBlock FontSize="18" Text="Version: 2.4" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
 
         
         
