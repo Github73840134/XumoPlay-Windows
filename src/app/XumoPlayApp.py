@@ -32,10 +32,7 @@ for proc in psutil.process_iter(['pid', 'name','cmdline','exe']):
 			if i in proc.info['cmdline'][1]:
 				if proc.pid != os.getpid():
 					isOpen = proc.pid
-if isOpen != None:
-	print("App is open")
-	hwnd = get_hwnds_by_pid(isOpen)[0]
-	from win32more.Windows.Win32.UI.WindowsAndMessaging import (
+from win32more.Windows.Win32.UI.WindowsAndMessaging import (
 	GetForegroundWindow,
 	SetForegroundWindow,
 	FindWindowW,
@@ -43,6 +40,10 @@ if isOpen != None:
 	IsIconic,
 	SW_RESTORE,
 	)
+if isOpen != None:
+	print("App is open")
+	hwnd = get_hwnds_by_pid(isOpen)[-1]
+	
 	ShowWindow(hwnd, SW_RESTORE)
 	# Bring to front
 	SetForegroundWindow(hwnd)
@@ -211,6 +212,7 @@ class SplashApp(XamlApplication):
 				
 
 				self.apply_display_mode()
+				SetForegroundWindow(hwnd)
 				self.steam = True
 				PlaySoundW(PWSTR(os.path.join(os.getcwd(),'launch.wav')), None, SND_FILENAME | SND_ASYNC)
 			else:
